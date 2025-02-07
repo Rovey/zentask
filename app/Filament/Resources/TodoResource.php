@@ -44,13 +44,20 @@ class TodoResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->required()
                     ->relationship('user', 'name')
-                    ->default(fn () => auth()->id()),
+                    ->default(function () {
+                        /** @disregard P1013 Undefined method */
+                        return auth()->id();
+                    }),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->query(function () {
+                /** @disregard P1013 Undefined method */
+                return Todo::with('user')->where('user_id', auth()->id());
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
