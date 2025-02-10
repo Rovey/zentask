@@ -12,24 +12,19 @@ class Team extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function team()
-    {
-        return $this->belongsTo(User::class, 'owner_id');
-    }
-
-    public function owner()
-    {
-        return $this->belongsTo(User::class, 'owner_id');
-    }
-
     public function todos()
     {
         return $this->hasMany(Todo::class);
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function users()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsToMany(\App\Models\User::class, 'team_user');
     }
 
     public function roles(): HasMany

@@ -21,8 +21,6 @@ class RoleResource extends Resource implements HasShieldPermissions
 {
     use HasShieldFormComponents;
 
-    protected static bool $isScopedToTenant = false;
-
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function getPermissionPrefixes(): array

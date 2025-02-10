@@ -119,7 +119,7 @@ return [
      * add 'team_foreign_key' to 'roles', 'model_has_roles', and 'model_has_permissions'
      * (view the latest version of this package's migration file)
      */
-    'teams' => true,
+    'teams' => false,
 
     /*
      * The class to use to resolve the permissions team id

@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use App\Enums\Priority;
 use App\Filament\Resources\TodoResource\Pages;
 use App\Models\Todo;
+use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -16,6 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class TodoResource extends Resource
 {
     protected static ?string $model = Todo::class;
+
+    protected static bool $isScopedToTenant = true;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -48,6 +52,18 @@ class TodoResource extends Resource
                         /** @disregard P1013 Undefined method */
                         return auth()->id();
                     }),
+                Forms\Components\Select::make('project_id')
+                    ->relationship('project', 'name')
+                    ->required()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Hidden::make('team_id')
+                            ->default(function () {
+                                return Filament::getTenant()->id;
+                            }),
+                    ]),
             ]);
     }
 
@@ -67,6 +83,8 @@ class TodoResource extends Resource
                     ->sortable()
                     ->boolean(),
                 Tables\Columns\TextColumn::make('user.name')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('project.name')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()

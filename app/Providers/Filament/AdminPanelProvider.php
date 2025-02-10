@@ -58,11 +58,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->tenant(Team::class)
             ->tenantRegistration(RegisterTeam::class)
+            ->tenantRoutePrefix('team')
             ->tenantMiddleware([
                 \BezhanSalleh\FilamentShield\Middleware\SyncShieldTenant::class,
             ], isPersistent: true)
             ->plugins([
-                \TomatoPHP\FilamentUsers\FilamentUsersPlugin::make(),
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ]);
     }

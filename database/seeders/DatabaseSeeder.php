@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $team = Team::create([
-            'owner_id' => $user->id,
+            'user_id' => $user->id,
             'name' => 'Test Team',
         ]);
 
