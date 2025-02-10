@@ -7,13 +7,13 @@ use App\Filament\Resources\TodoResource\Pages;
 use App\Models\Todo;
 use Filament\Facades\Filament;
 use Filament\Forms;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 
 class TodoResource extends Resource
 {
@@ -21,48 +21,70 @@ class TodoResource extends Resource
 
     protected static bool $isScopedToTenant = true;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->autofocus()
-                    ->maxLength(255)
-                    ->required(),
-                Forms\Components\Textarea::make('description')
-                    ->placeholder('Enter a description if needed.')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('estimated_hours')
-                    ->required()
-                    ->numeric()
-                    ->step(0.1)
-                    ->placeholder('e.g., 2.5 hours')
-                    ->rule('regex:/^\d+(\.\d{1,2})?$/'),
-                Forms\Components\Select::make('priority')
-                    ->options(fn () => array_map('ucwords', array_column(Priority::cases(), 'value', 'name')))
-                    ->required(),
-                Forms\Components\Toggle::make('is_completed')
-                    ->required(),
-                Forms\Components\Select::make('user_id')
-                    ->required()
-                    ->relationship('user', 'name')
-                    ->default(function () {
-                        /** @disregard P1013 Undefined method */
-                        return auth()->id();
-                    }),
-                Forms\Components\Select::make('project_id')
-                    ->relationship('project', 'name')
-                    ->required()
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('name')
+                Forms\Components\Section::make('Task Details')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('title')
+                            ->autofocus()
                             ->required()
-                            ->maxLength(255),
-                        Hidden::make('team_id')
-                            ->default(function () {
-                                return Filament::getTenant()->id;
-                            }),
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        Forms\Components\Textarea::make('description')
+                            ->rows(3)
+                            ->placeholder('Describe the task...')
+                            ->columnSpanFull(),
+
+                        Forms\Components\Grid::make()
+                            ->columns(3)
+                            ->schema([
+                                Forms\Components\TextInput::make('estimated_hours')
+                                    ->numeric()
+                                    ->required()
+                                    ->step(0.5)
+                                    ->suffix('hours')
+                                    ->inputMode('decimal')
+                                    ->placeholder('2.5'),
+
+                                Forms\Components\Select::make('priority')
+                                    ->options(Priority::class)
+                                    ->required()
+                                    ->native(false)
+                                    ->selectablePlaceholder(false),
+
+                                Forms\Components\Toggle::make('is_completed')
+                                    ->label('Completed?')
+                                    ->inline(false)
+                                    ->offIcon('heroicon-o-x-mark')
+                                    ->onIcon('heroicon-o-check')
+                                    ->visibleOn(['edit']),
+                            ]),
+                    ]),
+
+                Forms\Components\Section::make('Assignment')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\Select::make('project_id')
+                            ->relationship('project', 'name')
+                            ->required()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\Hidden::make('team_id')
+                                    ->default(Filament::getTenant()->id),
+                            ])
+                            ->createOptionAction(
+                                fn ($action) => $action->label('Create New Project')),
+
+                        Forms\Components\Hidden::make('user_id')
+                            ->default(Auth::id()),
                     ]),
             ]);
     }
@@ -72,34 +94,63 @@ class TodoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('estimated_hours')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('priority')
+                    ->searchable()
                     ->sortable()
-                    ->searchable(),
-                Tables\Columns\IconColumn::make('is_completed')
-                    ->sortable()
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->sortable(),
+                    ->description(fn (Todo $record) => $record->description)
+                    ->wrap(),
+
                 Tables\Columns\TextColumn::make('project.name')
+                    ->badge()
+                    ->color('info')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+
+                Tables\Columns\TextColumn::make('estimated_hours')
+                    ->numeric(decimalPlaces: 1)
+                    ->suffix(' hrs')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->alignRight(),
+
+                Tables\Columns\TextColumn::make('priority')
+                    ->badge()
+                    ->color(fn (string $state) => match ($state) {
+                        Priority::HIGH->value => 'danger',
+                        Priority::MEDIUM->value => 'warning',
+                        Priority::LOW->value => 'success',
+                    })
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('is_completed')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Assigned To')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->date('M d, Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('priority')
+                    ->options(Priority::class),
+                Tables\Filters\TernaryFilter::make('is_completed'),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Edit'),
+                Tables\Actions\DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Delete'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
