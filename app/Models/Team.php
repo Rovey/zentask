@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
@@ -17,14 +19,14 @@ class Team extends Model
         return $this->hasMany(Todo::class);
     }
 
-    public function user()
+    public function users(): BelongsToMany
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(User::class, 'team_user');
     }
 
-    public function users()
+    public function user(): BelongsTo
     {
-        return $this->belongsToMany(\App\Models\User::class, 'team_user');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function roles(): HasMany

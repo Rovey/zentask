@@ -15,78 +15,108 @@ class TeamResource extends Resource
 {
     protected static ?string $model = Team::class;
 
-    // protected static bool $isScopedToTenant = true;
+    protected static bool $isScopedToTenant = false;
 
     protected static ?string $tenantOwnershipRelationshipName = 'user';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->columnSpanFull()
-                    ->required(),
+                Forms\Components\Section::make('Team Information')
+                    ->description('Manage team details and ownership')
+                    ->icon('heroicon-o-shield-check')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->autofocus()
+                            ->placeholder('Team Alpha')
+                            ->columnSpanFull()
+                            ->hint('Display name for your team'),
+
+                        Forms\Components\Hidden::make('user_id')
+                            ->default(Auth::id()),
+                    ]),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Team::whereHas('users', function ($query) {
-                $query->where('id', Auth::id());
-            }))
+            ->query(Team::whereHas('users', fn ($query) => $query->where('team_user.user_id', Auth::id())))
             ->recordUrl(fn ($record) => $record->user_id === Auth::id()
-                ? TeamResource::getUrl('edit', ['record' => $record])
-                : null
+                        ? self::getUrl('edit', ['record' => $record])
+                        : null
             )
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable()
+                    ->weight('medium')
+                    ->description(fn ($record) => $record->user_id === Auth::id()
+                        ? 'Your Team'
+                        : null),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Owner')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->sortable()
-                    ->searchable(),
+                    ->badge()
+                    ->color(fn ($record) => $record->user_id === Auth::id()
+                        ? 'success'
+                        : 'gray')
+                    ->icon(fn ($record) => $record->user_id === Auth::id()
+                        ? 'heroicon-o-check-circle'
+                        : null),
+
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->date('M d, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->alignRight(),
+
+                Tables\Columns\TextColumn::make('users_count')
+                    ->label('Members')
+                    ->counts('users')
+                    ->badge()
+                    ->color('info')
+                    ->sortable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                Tables\Filters\Filter::make('owned')
+                    ->label('My Teams')
+                    ->query(fn ($query) => $query->where('user_id', Auth::id())),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Edit Team')
                     ->visible(fn ($record) => $record->user_id === Auth::id()),
+
                 Tables\Actions\Action::make('leave')
-                    ->label('Leave Team')
+                    ->label('Leave')
+                    ->icon('heroicon-o-arrow-right-start-on-rectangle')
+                    ->color('danger')
                     ->action(function ($record) {
                         $record->users()->detach(Auth::id());
 
-                        // Check if the user has any teams left
                         /** @disregard P1013 Undefined method */
-                        $userTeamsCount = Auth::user()->teams()->count();
-
-                        // Redirect to the appropriate page
-                        if ($userTeamsCount > 0) {
-                            return redirect()->route('filament.resources.teams.index');
-                        } else {
+                        if (Auth::user()->teams()->count() === 0) {
                             return redirect()->route('filament.resources.teams.create');
                         }
+
+                        return redirect()->route('filament.resources.teams.index');
                     })
                     ->requiresConfirmation()
+                    ->modalHeading('Leave Team')
+                    ->modalDescription("Are you sure you want to leave this team? You'll need to be re-invited to regain access.")
+                    ->modalIcon('heroicon-o-exclamation-triangle')
                     ->visible(fn ($record) => $record->user_id !== Auth::id()),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                //
             ]);
     }
 
