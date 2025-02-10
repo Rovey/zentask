@@ -116,6 +116,7 @@ class TodoResource extends Resource
                         Priority::HIGH->value => 'danger',
                         Priority::MEDIUM->value => 'warning',
                         Priority::LOW->value => 'success',
+                        default => 'gray',
                     })
                     ->sortable(),
 

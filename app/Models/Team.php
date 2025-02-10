@@ -33,4 +33,9 @@ class Team extends Model
     {
         return $this->hasMany(\App\Models\Role::class);
     }
+
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
 }

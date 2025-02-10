@@ -10,4 +10,9 @@ class Project extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    public function todos()
+    {
+        return $this->hasMany(Todo::class);
+    }
 }
