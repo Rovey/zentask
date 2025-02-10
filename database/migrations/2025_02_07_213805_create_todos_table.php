@@ -12,6 +12,7 @@ return new class extends Migration
     {
         Schema::create('todos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('team_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
             $table->decimal('estimated_hours', 4, 1); // e.g., 2.5 hours

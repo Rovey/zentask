@@ -54,10 +54,6 @@ class TodoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(function () {
-                /** @disregard P1013 Undefined method */
-                return Todo::with('user')->where('user_id', auth()->id());
-            })
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
@@ -65,8 +61,10 @@ class TodoResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('priority')
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\IconColumn::make('is_completed')
+                    ->sortable()
                     ->boolean(),
                 Tables\Columns\TextColumn::make('user.name')
                     ->sortable(),

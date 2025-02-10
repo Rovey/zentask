@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Team;
+
 return [
     'shield_resource' => [
         'should_register_navigation' => true,
@@ -13,7 +15,7 @@ return [
         'cluster' => null,
     ],
 
-    'tenant_model' => null,
+    'tenant_model' => Team::class,
 
     'auth_provider_model' => [
         'fqcn' => 'App\\Models\\User',

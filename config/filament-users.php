@@ -9,7 +9,7 @@ return [
      * If you want to use your own resource, you can set this to true.
      * and use `php artisan filament-user:publish` to publish the resource.
      */
-    'publish_resource' => false,
+    'publish_resource' => true,
 
     /**
      * ---------------------------------------------
@@ -49,7 +49,7 @@ return [
      * ---------------------------------------------
      * if you want to allow team resource and filters and actions.
      */
-    'teams' => false,
+    'teams' => true,
 
     /**
      * ---------------------------------------------
@@ -65,7 +65,7 @@ return [
      * ---------------------------------------------
      * if you when to custom the team model path
      */
-    // 'team_model' => \App\Models\Team::class,
+    'team_model' => \App\Models\Team::class,
 
     /**
      * ---------------------------------------------
@@ -73,7 +73,7 @@ return [
      * ---------------------------------------------
      * if you when to custom the role model path
      */
-    'roles_model' => \Spatie\Permission\Models\Role::class,
+    'roles_model' => \App\Models\Role::class,
 
     /**
      * ---------------------------------------------

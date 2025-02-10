@@ -24,6 +24,8 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static bool $isScopedToTenant = false;
+
     protected static ?int $navigationSort = 9;
 
     protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
