@@ -117,17 +117,19 @@ class TodoResource extends Resource
                                 Forms\Components\TextInput::make('name')
                                     ->required()
                                     ->maxLength(255),
-                                Forms\Components\Hidden::make('team_id')
-                                    ->default(Filament::getTenant()->id),
                             ])
-                            ->createOptionAction(
-                                fn ($action) => $action->label('Create New Project'))
+                            ->createOptionModalHeading('Create Project')
+                            ->createOptionUsing(function (array $data): int {
+                                return Filament::getTenant()->projects()->create($data)->getKey();
+                            })
                             ->default(function () {
                                 $tenant = Filament::getTenant();
                                 $projects = $tenant->projects;
 
                                 return $projects->count() === 1 ? $projects->first()->id : null;
-                            }),
+                            })
+                            ->searchable()
+                            ->preload(),
 
                         Forms\Components\Hidden::make('user_id')
                             ->default(Auth::id()),
