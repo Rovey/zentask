@@ -45,12 +45,30 @@ class TodoResource extends Resource
                             ->columns(2)
                             ->schema([
                                 Forms\Components\TextInput::make('estimated_hours')
-                                    ->numeric()
                                     ->required()
                                     ->step(0.5)
                                     ->suffix('hours')
                                     ->inputMode('decimal')
-                                    ->placeholder('2.5'),
+                                    ->placeholder('2.5')
+                                    ->rule([
+                                        'regex:/^
+                                            \d+      # Whole number part
+                                            ([,.]     # Decimal separator (either , or .)
+                                            \d{1})?  # Exactly one decimal digit
+                                        $/x',
+                                    ])
+                                    ->dehydrateStateUsing(function ($state) {
+                                        // Normalize to dot and remove extra decimals
+                                        $state = str_replace(',', '.', $state);
+                                        $parts = explode('.', $state);
+
+                                        // Keep only first decimal if multiple exist
+                                        if (count($parts) > 1) {
+                                            return $parts[0].'.'.substr($parts[1], 0, 1);
+                                        }
+
+                                        return $state;
+                                    }),
 
                                 Forms\Components\Select::make('priority')
                                     ->options(Priority::class)
