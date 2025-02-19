@@ -94,7 +94,13 @@ class TodoResource extends Resource
                                     ->default(Filament::getTenant()->id),
                             ])
                             ->createOptionAction(
-                                fn ($action) => $action->label('Create New Project')),
+                                fn ($action) => $action->label('Create New Project'))
+                            ->default(function () {
+                                $tenant = Filament::getTenant();
+                                $projects = $tenant->projects;
+
+                                return $projects->count() === 1 ? $projects->first()->id : null;
+                            }),
 
                         Forms\Components\Hidden::make('user_id')
                             ->default(Auth::id()),
