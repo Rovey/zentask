@@ -86,7 +86,7 @@ class TodoResource extends Resource
                                     ->offIcon('heroicon-o-x-mark')
                                     ->onIcon('heroicon-o-check')
                                     ->reactive()
-                                    ->visibleOn(['edit'])
+                                    ->visibleOn(['view', 'edit'])
                                     ->afterStateUpdated(function ($get, $set) {
                                         $isCompleted = $get('is_completed');
 
@@ -140,6 +140,7 @@ class TodoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn (Todo $record) => self::getUrl('view', ['record' => $record]))
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
@@ -246,6 +247,7 @@ class TodoResource extends Resource
         return [
             'index' => Pages\ListTodos::route('/'),
             'create' => Pages\CreateTodo::route('/create'),
+            'view' => Pages\ViewTodo::route('/{record}'),
             'edit' => Pages\EditTodo::route('/{record}/edit'),
         ];
     }
