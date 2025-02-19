@@ -68,7 +68,16 @@ class TodoResource extends Resource
                                     ->offIcon('heroicon-o-x-mark')
                                     ->onIcon('heroicon-o-check')
                                     ->reactive()
-                                    ->visibleOn(['edit']),
+                                    ->visibleOn(['edit'])
+                                    ->afterStateUpdated(function ($get, $set) {
+                                        $isCompleted = $get('is_completed');
+
+                                        if ($isCompleted) {
+                                            $set('completed_at', now());
+                                        } else {
+                                            $set('completed_at', null);
+                                        }
+                                    }),
 
                                 Forms\Components\DatePicker::make('completed_at')
                                     ->label('Completed At')
