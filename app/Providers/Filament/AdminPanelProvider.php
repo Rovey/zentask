@@ -65,6 +65,8 @@ class AdminPanelProvider extends PanelProvider
                 \BezhanSalleh\FilamentShield\Middleware\SyncShieldTenant::class,
                 ApplyTenantScopes::class,
             ], isPersistent: true)
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->plugins([
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
             ]);
