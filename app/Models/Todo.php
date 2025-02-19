@@ -10,6 +10,10 @@ class Todo extends Model
 {
     use SoftDeletes;
 
+    protected $casts = [
+        'completed_at' => 'date',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

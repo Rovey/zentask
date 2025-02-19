@@ -42,7 +42,7 @@ class TodoResource extends Resource
                             ->columnSpanFull(),
 
                         Forms\Components\Grid::make()
-                            ->columns(3)
+                            ->columns(2)
                             ->schema([
                                 Forms\Components\TextInput::make('estimated_hours')
                                     ->numeric()
@@ -57,13 +57,26 @@ class TodoResource extends Resource
                                     ->required()
                                     ->native(false)
                                     ->selectablePlaceholder(false),
+                            ]),
 
+                        Forms\Components\Grid::make()
+                            ->columns(2)
+                            ->schema([
                                 Forms\Components\Toggle::make('is_completed')
                                     ->label('Completed?')
                                     ->inline(false)
                                     ->offIcon('heroicon-o-x-mark')
                                     ->onIcon('heroicon-o-check')
+                                    ->reactive()
                                     ->visibleOn(['edit']),
+
+                                Forms\Components\DatePicker::make('completed_at')
+                                    ->label('Completed At')
+                                    ->displayFormat('d-m-Y')
+                                    ->native(false)
+                                    ->closeOnDateSelection()
+                                    ->reactive()
+                                    ->visible(fn ($get) => $get('is_completed')),
                             ]),
                     ]),
 
@@ -128,6 +141,11 @@ class TodoResource extends Resource
                     ->falseColor('danger')
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('completed_at')
+                    ->date('M d, Y')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Assigned To')
                     ->sortable()
@@ -147,6 +165,24 @@ class TodoResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
+                // Add action to mark todo as completed
+                Tables\Actions\Action::make('mark-as-completed')
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-check')
+                    ->form([
+                        Forms\Components\DatePicker::make('completed_at')
+                            ->required()
+                            ->label('Completed At')
+                            ->default(now())
+                            ->displayFormat('d-m-Y')
+                            ->native(false)
+                            ->closeOnDateSelection(),
+                    ])
+                    ->action(fn (Todo $record) => $record->update([
+                        'is_completed' => true,
+                        'completed_at' => now(),
+                    ]))
+                    ->visible(fn (Todo $record) => ! $record->is_completed),
                 Tables\Actions\EditAction::make()
                     ->iconButton()
                     ->tooltip('Edit'),
