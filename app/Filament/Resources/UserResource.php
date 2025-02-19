@@ -83,6 +83,11 @@ class UserResource extends Resource
                     ->icon('heroicon-o-users')
                     ->toggleable()
                     ->badge(),
+                TextColumn::make('roles.name')
+                    ->color('info')
+                    ->icon('heroicon-o-shield-check')
+                    ->toggleable()
+                    ->badge(),
                 TextColumn::make('created_at')
                     ->dateTime('M j, Y')
                     ->toggleable(isToggledHiddenByDefault: true)
