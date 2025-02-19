@@ -142,7 +142,8 @@ class TodoResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('priority')
                     ->options(Priority::class),
-                Tables\Filters\TernaryFilter::make('is_completed'),
+                Tables\Filters\TernaryFilter::make('is_completed')
+                    ->default(false),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
