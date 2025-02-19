@@ -10,6 +10,11 @@ class EditTodo extends EditRecord
 {
     protected static string $resource = TodoResource::class;
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
