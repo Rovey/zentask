@@ -194,6 +194,9 @@ class TodoResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
+                Tables\Filters\SelectFilter::make('project_id')
+                    ->relationship('project', 'name')
+                    ->label('Project'),
                 Tables\Filters\SelectFilter::make('priority')
                     ->options(Priority::class),
                 Tables\Filters\TernaryFilter::make('is_completed')
