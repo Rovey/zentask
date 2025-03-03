@@ -131,6 +131,17 @@ class TodoResource extends Resource
                             ->searchable()
                             ->preload(),
 
+                        Forms\Components\Select::make('assigned_to')
+                            ->relationship('assignedTo', 'name')
+                            ->nullable()
+                            ->searchable()
+                            ->preload()
+                            ->options(function () {
+                                $tenant = Filament::getTenant();
+
+                                return $tenant->users()->pluck('name', 'id');
+                            }),
+
                         Forms\Components\Hidden::make('user_id')
                             ->default(Auth::id()),
                     ]),
@@ -142,6 +153,10 @@ class TodoResource extends Resource
         return $table
             ->recordUrl(fn (Todo $record) => self::getUrl('view', ['record' => $record]))
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('#')
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->sortable()
@@ -152,6 +167,22 @@ class TodoResource extends Resource
                     ->badge()
                     ->color('info')
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('assignedTo.name')
+                    ->label('Assigned to')
+                    ->badge()
+                    ->color('info')
+                    ->icon('heroicon-o-user')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label('Created by')
+                    ->badge()
+                    ->color('info')
+                    ->icon('heroicon-o-user')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('estimated_hours')
                     ->numeric(decimalPlaces: 1)
@@ -182,17 +213,12 @@ class TodoResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('user.name')
-                    ->label('Assigned To')
-                    ->sortable()
-                    ->toggleable(),
-
                 Tables\Columns\TextColumn::make('created_at')
                     ->date('M d, Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('id', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('project_id')
                     ->relationship('project', 'name')

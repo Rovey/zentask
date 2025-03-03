@@ -82,4 +82,9 @@ class User extends Authenticatable implements FilamentUser, HasDefaultTenant, Ha
     // {
     //     return $this->hasMany(Team::class, 'user_id');
     // }
+
+    public function todos(): HasMany
+    {
+        return $this->hasMany(Todo::class);
+    }
 }

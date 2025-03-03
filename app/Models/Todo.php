@@ -28,4 +28,9 @@ class Todo extends Model
     {
         return $this->belongsTo(Project::class);
     }
+
+    public function assignedTo(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
 }
