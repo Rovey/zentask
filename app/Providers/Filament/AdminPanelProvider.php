@@ -44,6 +44,9 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
+            ->sidebarWidth('15rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->collapsedSidebarWidth('9rem')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
