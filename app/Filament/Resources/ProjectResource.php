@@ -60,6 +60,14 @@ class ProjectResource extends Resource
                     ->sortable()
                     ->alignCenter(),
 
+                Tables\Columns\TextColumn::make('categories_count')
+                    ->label('Categories')
+                    ->counts('categories')
+                    ->badge()
+                    ->color('info')
+                    ->sortable()
+                    ->alignCenter(),
+
                 Tables\Columns\TextColumn::make('team.name')
                     ->label('Team')
                     ->badge()
@@ -100,7 +108,7 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Add relation managers here if needed
+            'categories' => ProjectResource\RelationManagers\CategoriesRelationManager::class,
         ];
     }
 

@@ -21,17 +21,19 @@ class TodoExporter extends Exporter
                 ->label('Title'),
             ExportColumn::make('description')
                 ->label('Description'),
+            ExportColumn::make('project.name')
+                ->label('Project'),
+            ExportColumn::make('category.name')
+                ->label('Category'),
+            ExportColumn::make('user.name')
+                ->label('Created by'),
+            ExportColumn::make('assignedTo.name')
+                ->label('Assigned to'),
             ExportColumn::make('estimated_hours')
                 ->label('Est. Hours'),
             ExportColumn::make('priority')
                 ->label('Priority')
                 ->formatStateUsing(fn (string $state): string => ucfirst($state)),
-            ExportColumn::make('project.name')
-                ->label('Project'),
-            ExportColumn::make('user.name')
-                ->label('Created by'),
-            ExportColumn::make('assignedTo.name')
-                ->label('Assigned to'),
             ExportColumn::make('is_completed')
                 ->label('Completed?')
                 ->formatStateUsing(fn (bool $state): string => $state ? 'Yes' : 'No'),

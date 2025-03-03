@@ -4,11 +4,13 @@ namespace App\Filament\Resources;
 
 use App\Enums\Priority;
 use App\Filament\Resources\TodoResource\Pages;
+use App\Models\ProjectCategory;
 use App\Models\Todo;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Colors\Color;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -129,7 +131,42 @@ class TodoResource extends Resource
                                 return $projects->count() === 1 ? $projects->first()->id : null;
                             })
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->reactive()
+                            ->afterStateUpdated(function ($set) {
+                                $set('project_category_id', null);
+                            }),
+
+                        Forms\Components\Select::make('project_category_id')
+                            ->relationship('category', 'name')
+                            ->nullable()
+                            ->searchable()
+                            ->preload()
+                            ->disabled(fn ($get) => ! $get('project_id'))
+                            ->options(function ($get) {
+                                $projectId = $get('project_id');
+                                if (! $projectId) {
+                                    return [];
+                                }
+
+                                return \App\Models\ProjectCategory::where('project_id', $projectId)->pluck('name', 'id');
+                            })
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                Forms\Components\ColorPicker::make('color')
+                                    ->required()
+                                    ->regex('/^#([a-f0-9]{6}|[a-f0-9]{3})\b$/'),
+                            ])
+                            ->createOptionModalHeading('Create Project Category')
+                            ->createOptionUsing(function (array $data, callable $get): int {
+                                $projectId = $get('project_id');
+                                $data['project_id'] = $projectId;
+
+                                return ProjectCategory::create($data)->getKey();
+                            }),
 
                         Forms\Components\Select::make('assigned_to')
                             ->relationship('assignedTo', 'name')
@@ -166,6 +203,11 @@ class TodoResource extends Resource
                 Tables\Columns\TextColumn::make('project.name')
                     ->badge()
                     ->color('info')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('category.name')
+                    ->badge()
+                    ->color(fn (Todo $record) => Color::hex($record->category->color ?? '#ffffff'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('assignedTo.name')

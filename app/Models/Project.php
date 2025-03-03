@@ -15,4 +15,9 @@ class Project extends Model
     {
         return $this->hasMany(Todo::class);
     }
+
+    public function categories()
+    {
+        return $this->hasMany(ProjectCategory::class);
+    }
 }
