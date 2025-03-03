@@ -265,6 +265,12 @@ class TodoResource extends Resource
                 Tables\Filters\SelectFilter::make('project_id')
                     ->relationship('project', 'name')
                     ->label('Project'),
+                Tables\Filters\SelectFilter::make('category_id')
+                    ->relationship('category', 'name')
+                    ->label('Category'),
+                Tables\Filters\SelectFilter::make('assigned_to')
+                    ->relationship('assignedTo', 'name')
+                    ->label('Assigned to'),
                 Tables\Filters\SelectFilter::make('priority')
                     ->options(Priority::class),
                 Tables\Filters\TernaryFilter::make('is_completed')
