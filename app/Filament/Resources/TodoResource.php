@@ -363,6 +363,20 @@ class TodoResource extends Resource
                 Tables\Filters\SelectFilter::make('assigned_to')
                     ->relationship('assignedTo', 'name')
                     ->label('Assigned to'),
+                Tables\Filters\TernaryFilter::make('assigned_status')
+                    ->nullable()
+                    ->attribute('assigned_to')
+                    ->placeholder('Ignored')
+                    ->trueLabel('Assigned')
+                    ->falseLabel('Unassigned')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereNotNull('assigned_to'),
+                        false: fn (Builder $query) => $query->whereNull('assigned_to'),
+                        blank: fn (Builder $query) => $query,
+                    ),
+                Tables\Filters\SelectFilter::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label('Created by'),
                 Tables\Filters\SelectFilter::make('priority')
                     ->options(Priority::class),
                 Tables\Filters\TernaryFilter::make('is_completed')
