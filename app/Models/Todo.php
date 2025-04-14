@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Parallax\FilamentComments\Models\Traits\HasFilamentComments;
 
 class Todo extends Model
 {
-    use SoftDeletes;
+    use HasFilamentComments, SoftDeletes;
 
     protected $casts = [
         'completed_at' => 'date',

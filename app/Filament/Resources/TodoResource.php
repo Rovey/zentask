@@ -9,6 +9,10 @@ use App\Models\Todo;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Support\Colors\Color;
 use Filament\Tables;
@@ -16,6 +20,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Parallax\FilamentComments\Infolists\Components\CommentsEntry;
+use Parallax\FilamentComments\Tables\Actions\CommentsAction;
 
 class TodoResource extends Resource
 {
@@ -60,11 +66,9 @@ class TodoResource extends Resource
                                         $/x',
                                     ])
                                     ->dehydrateStateUsing(function ($state) {
-                                        // Normalize to dot and remove extra decimals
                                         $state = str_replace(',', '.', $state);
                                         $parts = explode('.', $state);
 
-                                        // Keep only first decimal if multiple exist
                                         if (count($parts) > 1) {
                                             return $parts[0].'.'.substr($parts[1], 0, 1);
                                         }
@@ -185,6 +189,89 @@ class TodoResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                // Task Information Section
+                Section::make('Task Information')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('title')
+                            ->label('Title')
+                            ->columnSpanFull()
+                            ->weight('bold'),
+
+                        TextEntry::make('description')
+                            ->label('Description')
+                            ->columnSpanFull()
+                            ->placeholder('No description provided')
+                            ->prose(),
+                    ]),
+
+                // Time & Priority Section
+                Section::make('Time & Priority')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('estimated_hours')
+                            ->label('Estimated Hours')
+                            ->suffix(' hours'),
+
+                        TextEntry::make('priority')
+                            ->label('Priority')
+                            ->badge()
+                            ->color(fn (string $state) => match ($state) {
+                                Priority::HIGH->value => 'danger',
+                                Priority::MEDIUM->value => 'warning',
+                                Priority::LOW->value => 'success',
+                                default => 'gray',
+                            }),
+                    ]),
+
+                // Completion Status Section
+                Section::make('Completion Status')
+                    ->columns(2)
+                    ->schema([
+                        IconEntry::make('is_completed')
+                            ->label('Status')
+                            ->boolean()
+                            ->trueIcon('heroicon-o-check-circle')
+                            ->falseIcon('heroicon-o-x-circle'),
+
+                        TextEntry::make('completed_at')
+                            ->label('Completed Date')
+                            ->formatStateUsing(fn ($state) => $state?->format('M d, Y') ?? 'N/A')
+                            ->visible(fn ($record) => $record->is_completed),
+                    ]),
+
+                // Assignment Details Section
+                Section::make('Assignment Details')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('project.name')
+                            ->label('Project')
+                            ->placeholder('No project assigned'),
+
+                        TextEntry::make('category.name')
+                            ->label('Category')
+                            ->placeholder('No category set'),
+
+                        TextEntry::make('assignedTo.name')
+                            ->label('Assigned To')
+                            ->placeholder('Unassigned')
+                            ->columnSpanFull(),
+                    ]),
+
+                // Comments Section
+                Section::make('Comments')
+                    ->columnSpanFull()
+                    ->schema([
+                        CommentsEntry::make('filament_comments'),
+                    ]),
+            ])
+            ->columns(2);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -302,6 +389,10 @@ class TodoResource extends Resource
                         'completed_at' => now(),
                     ]))
                     ->visible(fn (Todo $record) => ! $record->is_completed),
+                CommentsAction::make()
+                    ->hiddenLabel()
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->authorize(fn () => Auth::user()->can('view_todo')),
                 Tables\Actions\EditAction::make()
                     ->iconButton()
                     ->tooltip('Edit'),
