@@ -441,6 +441,23 @@ class TodoResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('mark-as-completed')
+                        ->hiddenLabel()
+                        ->icon('heroicon-o-check')
+                        ->form([
+                            Forms\Components\DatePicker::make('completed_at')
+                                ->required()
+                                ->label('Completed At')
+                                ->default(now())
+                                ->displayFormat('d-m-Y')
+                                ->native(false)
+                                ->closeOnDateSelection(),
+                        ])
+                        ->action(fn ($records, array $data) => Todo::whereIn('id', $records->pluck('id'))->update([
+                            'is_completed' => true,
+                            'completed_at' => $data['completed_at'],
+                        ]))
+                        ->authorize(fn () => Auth::user()->can('update_todo')),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
