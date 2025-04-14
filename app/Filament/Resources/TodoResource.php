@@ -16,6 +16,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Support\Colors\Color;
 use Filament\Tables;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -382,6 +383,29 @@ class TodoResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_completed')
                     ->default(false),
                 Tables\Filters\TrashedFilter::make(),
+            ], layout: FiltersLayout::Modal)
+            ->filtersFormColumns(2)
+            ->filtersFormSchema(fn (array $filters): array => [
+                Forms\Components\Section::make('Assignment Filters')
+                    ->description('Filters related to assignment and project details.')
+                    ->schema([
+                        $filters['project_id'],
+                        $filters['category_id'],
+                        $filters['assigned_to'],
+                        $filters['assigned_status'],
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
+                Forms\Components\Section::make('User Filters')
+                    ->description('Filters related to user and priority.')
+                    ->schema([
+                        $filters['user_id'],
+                        $filters['priority'],
+                        $filters['is_completed'],
+                        $filters['trashed'],
+                    ])
+                    ->columns(2)
+                    ->columnSpanFull(),
             ])
             ->actions([
                 // Add action to mark todo as completed
