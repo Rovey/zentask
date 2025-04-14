@@ -266,9 +266,10 @@ class TodoResource extends Resource
                     ->relationship('project', 'name')
                     ->label('Project'),
                 Tables\Filters\SelectFilter::make('category_id')
+                    ->relationship('category', 'name')
                     ->options(
                         fn () => ProjectCategory::whereHas('project', function (Builder $query) {
-                            $query->where('team_id', Filament::getTenant()->id);
+                            $query->where('team_id', Filament::getTenant()?->id);
                         })->pluck('name', 'id')
                     )
                     ->label('Category'),
