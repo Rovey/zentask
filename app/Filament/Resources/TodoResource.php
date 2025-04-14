@@ -316,7 +316,19 @@ class TodoResource extends Resource
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
             ])
-            ->persistFiltersInSession();
+            ->persistFiltersInSession(function () {
+                $sessionTenant = session('tenant_id');
+                $currentTenant = Filament::getTenant();
+                $currentTenantId = $currentTenant ? $currentTenant->id : null;
+
+                $tenantChanged = $sessionTenant !== $currentTenantId;
+
+                if ($tenantChanged) {
+                    session(['tenant_id' => $currentTenantId]);
+                }
+
+                return $tenantChanged;
+            });
     }
 
     public static function getRelations(): array
