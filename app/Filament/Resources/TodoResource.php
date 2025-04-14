@@ -291,6 +291,7 @@ class TodoResource extends Resource
                             ->native(false)
                             ->closeOnDateSelection(),
                     ])
+                    ->authorize(fn () => Auth::user()->can('update_todo'))
                     ->action(fn (Todo $record) => $record->update([
                         'is_completed' => true,
                         'completed_at' => now(),
