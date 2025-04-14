@@ -458,6 +458,25 @@ class TodoResource extends Resource
                             'completed_at' => $data['completed_at'],
                         ]))
                         ->authorize(fn () => Auth::user()->can('update_todo')),
+                    Tables\Actions\BulkAction::make('assign-to')
+                        ->hiddenLabel()
+                        ->icon('heroicon-o-user-plus')
+                        ->form([
+                            Forms\Components\Select::make('assigned_to')
+                                ->relationship('assignedTo', 'name')
+                                ->nullable()
+                                ->searchable()
+                                ->preload()
+                                ->options(function () {
+                                    $tenant = Filament::getTenant();
+
+                                    return $tenant->users()->pluck('name', 'id');
+                                }),
+                        ])
+                        ->action(fn ($records, array $data) => Todo::whereIn('id', $records->pluck('id'))->update([
+                            'assigned_to' => $data['assigned_to'],
+                        ]))
+                        ->authorize(fn () => Auth::user()->can('update_todo')),
                     Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
