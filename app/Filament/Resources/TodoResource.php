@@ -379,7 +379,8 @@ class TodoResource extends Resource
                     ->relationship('user', 'name')
                     ->label('Created by'),
                 Tables\Filters\SelectFilter::make('priority')
-                    ->options(Priority::class),
+                    ->options(Priority::class)
+                    ->multiple(),
                 Tables\Filters\TernaryFilter::make('is_completed')
                     ->default(false),
                 Tables\Filters\TrashedFilter::make(),
