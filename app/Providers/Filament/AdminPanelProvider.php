@@ -20,6 +20,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Enums\MaxWidth;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -47,6 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('15rem')
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('9rem')
+            ->maxContentWidth(MaxWidth::Full)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
